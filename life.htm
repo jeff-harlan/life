@@ -3,9 +3,45 @@
 <head>
 <meta charset="utf-8"/>
 <title>life</title>
+<style>
+#help {
+   position: absolute;
+   top: 50%;
+   left: 50%;
+   border: 5px double #505050;
+   padding: 20px;
+   background-color: orange;
+   transform: translate(-50%, -50%);
+   z-index: 1;
+}
+</style>
 </head>
 <body bgcolor="black">
+<center>
 <canvas id="canvas"></canvas>
+</center>
+<div id="help">
+<center><h3>conway's game of life</h3></center>
+<ul>
+<li>h - help</li>
+<li>j - slower</li>
+<li>k - faster</li>
+<li>p - pause/play</li>
+<li>r - random cells</li>
+<li>s - single step</li>
+<li>z - zero cells</li>
+<!-- arrow keys -->
+<li>&#x2193; - scroll down</li>
+<li>&#x2192; - scroll right</li>
+<li>&#x2191; - scroll up</li>
+<li>&#x2190; - scroll left</li>
+</ul>
+<center>
+hint - pause, click to toggle, play<br>
+<a href="https://en.wikipedia.org/wiki/Conway's_Game_of_Life">conway's game of life</a><br><br>
+&#x00a9 2021-2022 jeff harlan
+</center>
+</div>
 </body>
 <script src="jquery-3.1.1.js"></script>
 
@@ -13,7 +49,7 @@
 
 // jeff harlan
 // 2021.11.29
-// 2021.12.30
+// 2022.01.02
 
 var liveColor = 'green';
 var deadColor = 'black';
@@ -100,6 +136,7 @@ async function life() {
    var zero = 0;
    var random = 0;
    var delay = 50;
+   var help = 1;
 
    $(document).keydown(function(e) {
      if(e.which == 80) {  // 'p' - pause
@@ -169,6 +206,13 @@ async function life() {
    });
 
    $(document).keydown(function(e) {
+     if(e.which == 72) {  // 'h' - help
+        help = help ? 0 : 1;
+console.log( 'help: ' + help );
+     }
+   });
+
+   $(document).keydown(function(e) {
      if(e.which == 74) {  // 'j' - slower
         if(delay < 500) {
            delay += 20;
@@ -232,6 +276,12 @@ async function life() {
    
    while( 1 ) {
    
+      if( help ) {
+         document.getElementById("help").style.display = "inline";
+      } else {
+         document.getElementById("help").style.display = "none";  // hide the help div
+      }
+
       if( pause ) {
          await sleep(500);
       } else {
@@ -316,8 +366,8 @@ async function life() {
       
          var xx = 0;  // map array of arrays to canvas cells
          var yy = 0;
-         for( var x = 10; x < xlimit; x+=7 ) {    // border 11, cell plus surround is 7
-            for( var y = 10; y < ylimit; y+=7 ) {  // was 10
+         for( var x = 10; x <= xlimit; x+=7 ) {    // border 11, cell plus surround is 7
+            for( var y = 10; y <= ylimit; y+=7 ) {  // was 10
                if( next[xx][yy] == 1 ) {
                   ctx.fillStyle = liveColor;  // live cell
                } else {
