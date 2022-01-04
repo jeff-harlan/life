@@ -235,12 +235,10 @@ console.log( 'help: ' + help );
 
    function getCursorPosition(canvas, event) {
        const rect = canvas.getBoundingClientRect()
-       const x = event.clientX - rect.left
+       const x = event.clientX - rect.left  // array coordinates
        const y = event.clientY - rect.top
-       var xx = Math.floor((x-9)/7);
+       var xx = Math.floor((x-9)/7);    // canvas coordinates
        var yy = Math.floor((y-9)/7);
-//       console.log("x: " + x + " y: " + y)    // canvas coordinates
-//       console.log("X: " + xx + " Y: " + yy)  // array coordinates
        last = toggle_cell( canvas.getContext('2d'), last, xx, yy );
    }
 
@@ -423,8 +421,6 @@ function detect_screen() {
 //   106     228  - hardcoded array dimensions - nsc floor( h,w / 7.1 )  - height, width
 //   750    1600  - hardcoded screen x,y max - step 7 - h-10, w-25  - xlimit, ylimit
 //   760    1625  - no scrollbars canvas size - h,w - 23  - xcanvas, ycanvas
-//h: 783 w: 1648  - max browser window - no scroll
-//h: 960 w: 1708  - full screen mode
 
 detect_screen();
 life();
