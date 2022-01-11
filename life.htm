@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html language='en'>
+<html language="en">
 <head>
 <meta charset="utf-8"/>
 <title>life</title>
@@ -52,378 +52,378 @@ hint - pause, click to toggle, play<br>
 // 2021.11.29
 // 2022.01.02
 
-var liveColor = 'green';
-var deadColor = 'black';
-var height;  // array height, width
-var width;
-var xlimit;  // canvas plot x, y limit
-var ylimit;
-var xcanvas; // canvas size
-var ycanvas;
+function wrap() {
+   var liveColor = "green";
+   var deadColor = "black";
+   var height;  // array height, width
+   var width;
+   var xlimit;  // canvas plot x, y limit
+   var ylimit;
+   var xcanvas; // canvas size
+   var ycanvas;
 
-var last = [];  // two dimensional arrays for current and next generations
-var next = [];
-   
-function sleep(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
+   var last = [];  // two dimensional arrays for current and next generations
+   var next = [];
 
-function cycleColor(c) {
-   colors = [ 'green', 'cyan', 'red', 'blue', 'magenta', 'white', 'purple', 'yellow', 'pink' ];
-   found = 0;
-   for( var x = 0; x < colors.length; x++ ) {  // search for given color
-      if( c === colors[ x ] ) 
-         found = x;
-   }
-   if( found < colors.length -1 ) {   // return next color
-      return colors[ found +1 ];
-   } else {
-      return colors[ 0 ];
-   }
-}
-
-function scroll_left( array ) {   // top level array
-   var lastColumn = array.pop();
-   array.unshift( lastColumn );
-   return array;
-}
-
-function scroll_right( array ) {
-   var lastColumn = array.shift();
-   array.push( lastColumn );
-   return array;
-}
-
-function scroll_down( array ) {   // second level array
-   for( var x=0; x<array.length; x++ ) {
-      var lastCell = array[x].shift();
-      array[x].push( lastCell );
-   }
-   return array;
-}
-
-function scroll_up( array ) {
-   for( var x=0; x<array.length; x++ ) {
-      var lastCell = array[x].pop();
-      array[x].unshift( lastCell );
-   }
-   return array;
-}
-
-function zero_cells( array ) {
-   for( var i = 0; i < array.length; i++ ) { 
-     for( var j = 0; j < array[i].length; j++ ) {
-        array[i][j] = 0;
-     }
-   }
-   return array;
-}
-
-function random_cells( array ) {
-   for( var i = 0; i < array.length; i++ ) { 
-     for( var j = 0; j < array[i].length; j++ ) {
-        array[i][j] = Math.floor(Math.random() * 2);
-     }
-   }
-   return array;
-}
-
-
-async function life() {
-
-   var pause = 0;
-   var step = 0;
-   var scroll = '';
-   var zero = 0;
-   var random = 0;
-   var delay = 50;
-   var help = 1;
-
-   $(document).keydown(function(e) {
-     if(e.which == 80) {  // 'p' - pause
-        pause = pause ? 0 : 1;
-     }
-   });
-
-   $(document).keydown(function(e) {
-     if(e.which == 83) {  // 's' - step
-        step = 1;
-        pause = 0;
-     }
-   });
-
-   $(document).keydown(function(e) {
-     if(e.which == 67) {  // 'c' - color
-        liveColor = cycleColor( liveColor );
-     }
-   });
-
-   $(document).keydown(function(e) {
-     if(e.which == 39) {  // 'right' - scroll
-        scroll = 'right';
-     }
-   });
-
-   $(document).keydown(function(e) {
-     if(e.which == 37) {  // 'left' - scroll
-        scroll = 'left';
-     }
-   });
-
-   $(document).keydown(function(e) {
-     if(e.which == 38) {  // 'up' - scroll
-        scroll = 'down';
-     }
-   });
-
-   $(document).keydown(function(e) {
-     if(e.which == 40) {  // 'down' - scroll
-        scroll = 'up';
-     }
-   });
-
-   $(document).keydown(function(e) {
-     if(e.which == 90) {  // 'z' - zero screen
-        zero = 1;
-     }
-   });
-
-   $(document).keydown(function(e) {
-     if(e.which == 82) {  // 'r' - randomize screen
-        random = 1;
-     }
-   });
-
-   $(document).keydown(function(e) {
-     if(e.which == 87) {  // 'w' - write last to log
-        log_array( last );
-     }
-   });
-
-   $(document).keydown(function(e) {
-     if(e.which == 68) {  // 'd' - log screen dimensions
-        console.log( 'h: ' + $(document).height() + ' w: ' + $(document).width() );
-     }
-   });
-
-   $(document).keydown(function(e) {
-     if(e.which == 72) {  // 'h' - help
-        help = help ? 0 : 1;
-console.log( 'help: ' + help );
-     }
-   });
-
-   $(document).keydown(function(e) {
-     if(e.which == 74) {  // 'j' - slower
-        if(delay < 500) {
-           delay += 20;
-	} else {
-	   delay = 500;
-	}
-     }
-   });
-
-   $(document).keydown(function(e) {
-     if(e.which == 75) {  // 'k' - faster
-        if(delay > 50) {
-           delay -= 20;
-	} else {
-	   delay = 50;
-	}
-     }
-   });
-
-   function getCursorPosition(canvas, event) {
-       const rect = canvas.getBoundingClientRect()
-       const x = event.clientX - rect.left  // array coordinates
-       const y = event.clientY - rect.top
-       var xx = Math.floor((x-9)/7);    // canvas coordinates
-       var yy = Math.floor((y-9)/7);
-       last = toggle_cell( canvas.getContext('2d'), last, xx, yy );
+   function sleep(ms) {
+     return (new Promise(resolve => setTimeout(resolve, ms)));
    }
 
-   //         aaaaaaabbbbbbbc...   click area       int(canvas - 9)/7 
-   //          12345  12345  ...
-   //----------XXXXX__XXXXX__...   allow 9 for border - 1 border pixel for first row/column
-   //1234567890     12     12...
-
-   const canvas = document.querySelector('canvas')
-   canvas.addEventListener('mousedown', function(e) {
-       getCursorPosition(canvas, e)
-   })
-
-   const ctx = canvas.getContext('2d');
-   
-   for( var i = 0; i < last.length; i++ ) {   // create array of arrays
-     last[i] = new Array( height );
-     next[i] = new Array( height );
-     for( var j = 0; j < last[i].length; j++ ) {
-   	last[i][j] = 0;
-   	next[i][j] = 0;
-     }
-   }
-   
-   last = random_cells( last );
-
-   //+-----+-----+-----+
-   //|-1,-1| 0,-1|+1,-1|    0  1  2
-   //+-----+-----+-----+
-   //|-1,0 | 0,0 |+1,0 |    3     4
-   //+-----+-----+-----+
-   //|-1,+1| 0,+1|+1,+1|    5  6  7
-   //+-----+-----+-----+
-   
-   while( 1 ) {
-   
-      if( help ) {
-         document.getElementById("help").style.display = "inline";
+   function cycleColor(c) {
+      colors = [ "green", "cyan", "red", "blue", "magenta", "white", "purple", "yellow", "pink" ];
+      found = 0;
+      for( var x = 0; x < colors.length; x++ ) {  // search for given color
+         if( c === colors[ x ] )
+            found = x;
+      }
+      if( found < colors.length -1 ) {   // return next color
+         return colors[ found +1 ];
       } else {
-         document.getElementById("help").style.display = "none";  // hide the help div
+         return colors[ 0 ];
+      }
+   }
+
+   function scroll_left( array ) {   // top level array
+      var lastColumn = array.pop();
+      array.unshift( lastColumn );
+      return array;
+   }
+
+   function scroll_right( array ) {
+      var lastColumn = array.shift();
+      array.push( lastColumn );
+      return array;
+   }
+
+   function scroll_down( array ) {   // second level array
+      for( var x=0; x<array.length; x++ ) {
+         var lastCell = array[x].shift();
+         array[x].push( lastCell );
+      }
+      return array;
+   }
+
+   function scroll_up( array ) {
+      for( var x=0; x<array.length; x++ ) {
+         var lastCell = array[x].pop();
+         array[x].unshift( lastCell );
+      }
+      return array;
+   }
+
+   function zero_cells( array ) {
+      for( var i = 0; i < array.length; i++ ) {
+        for( var j = 0; j < array[i].length; j++ ) {
+           array[i][j] = 0;
+        }
+      }
+      return array;
+   }
+
+   function random_cells( array ) {
+      for( var i = 0; i < array.length; i++ ) {
+        for( var j = 0; j < array[i].length; j++ ) {
+           array[i][j] = Math.floor(Math.random() * 2);
+        }
+      }
+      return array;
+   }
+
+
+   async function life() {
+
+      var pause = 0;
+      var step = 0;
+      var scroll = "";
+      var zero = 0;
+      var random = 0;
+      var delay = 50;
+      var help = 1;
+
+      $(document).keydown(function(e) {
+        if(e.which == 80) {  // "p" - pause
+           pause = pause ? 0 : 1;
+        }
+      });
+
+      $(document).keydown(function(e) {
+        if(e.which == 83) {  // "s" - step
+           step = 1;
+           pause = 0;
+        }
+      });
+
+      $(document).keydown(function(e) {
+        if(e.which == 67) {  // "c" - color
+           liveColor = cycleColor( liveColor );
+        }
+      });
+
+      $(document).keydown(function(e) {
+        if(e.which == 39) {  // "right" - scroll
+           scroll = "right";
+        }
+      });
+
+      $(document).keydown(function(e) {
+        if(e.which == 37) {  // "left" - scroll
+           scroll = "left";
+        }
+      });
+
+      $(document).keydown(function(e) {
+        if(e.which == 38) {  // "up" - scroll
+           scroll = "down";
+        }
+      });
+
+      $(document).keydown(function(e) {
+        if(e.which == 40) {  // "down" - scroll
+           scroll = "up";
+        }
+      });
+
+      $(document).keydown(function(e) {
+        if(e.which == 90) {  // "z" - zero screen
+           zero = 1;
+        }
+      });
+
+      $(document).keydown(function(e) {
+        if(e.which == 82) {  // "r" - randomize screen
+           random = 1;
+        }
+      });
+
+      $(document).keydown(function(e) {
+        if(e.which == 87) {  // "w" - write last to log
+           log_array( last );
+        }
+      });
+
+      $(document).keydown(function(e) {
+        if(e.which == 68) {  // "d" - log screen dimensions
+           console.log( "h: " + $(document).height() + " w: " + $(document).width() );
+        }
+      });
+
+      $(document).keydown(function(e) {
+        if(e.which == 72) {  // "h" - help
+           help = help ? 0 : 1;
+   console.log( "help: " + help );
+        }
+      });
+
+      $(document).keydown(function(e) {
+        if(e.which == 74) {  // "j" - slower
+           if(delay < 500) {
+              delay += 20;
+           } else {
+              delay = 500;
+           }
+        }
+      });
+
+      $(document).keydown(function(e) {
+        if(e.which == 75) {  // "k" - faster
+           if(delay > 50) {
+              delay -= 20;
+           } else {
+              delay = 50;
+           }
+        }
+      });
+
+      function getCursorPosition(canvas, event) {
+          const rect = canvas.getBoundingClientRect()
+          const x = event.clientX - rect.left  // array coordinates
+          const y = event.clientY - rect.top
+          var xx = Math.floor((x-9)/7);    // canvas coordinates
+          var yy = Math.floor((y-9)/7);
+          last = toggle_cell( canvas.getContext("2d"), last, xx, yy );
       }
 
-      if( pause ) {
-         await sleep(500);
+      //         aaaaaaabbbbbbbc...   click area       int(canvas - 9)/7
+      //          12345  12345  ...
+      //----------XXXXX__XXXXX__...   allow 9 for border - 1 border pixel for first row/column
+      //1234567890     12     12...
+
+      const canvas = document.querySelector("canvas")
+      canvas.addEventListener("mousedown", function(e) {
+          getCursorPosition(canvas, e)
+      })
+
+      const ctx = canvas.getContext("2d");
+
+      for( var i = 0; i < last.length; i++ ) {   // create array of arrays
+        last[i] = new Array( height );
+        next[i] = new Array( height );
+        for( var j = 0; j < last[i].length; j++ ) {
+           last[i][j] = 0;
+           next[i][j] = 0;
+        }
+      }
+
+      last = random_cells( last );
+
+      //+-----+-----+-----+
+      //|-1,-1| 0,-1|+1,-1|    0  1  2
+      //+-----+-----+-----+
+      //|-1,0 | 0,0 |+1,0 |    3     4
+      //+-----+-----+-----+
+      //|-1,+1| 0,+1|+1,+1|    5  6  7
+      //+-----+-----+-----+
+
+      while( 1 ) {
+
+         if( help ) {
+            document.getElementById("help").style.display = "inline";
+         } else {
+            document.getElementById("help").style.display = "none";  // hide the help div
+         }
+
+         if( pause ) {
+            await sleep(500);
+         } else {
+
+            if( step ) {   // single step
+               step = 0;
+               pause = 1;
+            }
+
+            if( zero ) {   // clear screen
+               zero = 0;
+               last = zero_cells( last );
+            }
+
+            if( random ) {  // randomize screen
+               random = 0;
+               last = random_cells( last );
+            }
+
+            if( scroll ) {
+               if( scroll == "right" ) {
+                  last = scroll_left( last );
+               } else if( scroll == "left" ) {
+                  last = scroll_right( last );
+               } else if( scroll == "up" ) {
+                  last = scroll_down( last );
+               } else if( scroll == "down" ) {
+                  last = scroll_up( last );
+               } else {
+                  console.log( "unknown scroll value: " + scroll );
+               }
+               scroll = "";
+            }
+
+            for( var cell_x = 0; cell_x < width; cell_x++ ) {
+               for( var cell_y = 0; cell_y < height; cell_y++ ) {
+
+                  var n0x = cell_x -1; var n0y = cell_y -1;   // determine neighbors
+                  var n1x = cell_x   ; var n1y = cell_y -1;
+                  var n2x = cell_x +1; var n2y = cell_y -1;
+                  var n3x = cell_x -1; var n3y = cell_y;
+                  var n4x = cell_x +1; var n4y = cell_y;
+                  var n5x = cell_x -1; var n5y = cell_y +1;
+                  var n6x = cell_x   ; var n6y = cell_y +1;
+                  var n7x = cell_x +1; var n7y = cell_y +1;
+
+                  if( cell_x == 0 )                    // wrap edges horizontally and vertically
+                     n0x = n3x = n5x = width -1;
+
+                  if( cell_x == width -1 )
+                     n2x = n4x = n7x = 0;
+
+                  if( cell_y == 0 )
+                     n0y = n1y = n2y = height -1;
+
+                  if( cell_y == height -1 )
+                     n5y = n6y = n7y = 0;
+
+                  var count = last[n0x][n0y] + last[n1x][n1y] + last[n2x][n2y] + last[n3x][n3y] +
+                              last[n4x][n4y] + last[n5x][n5y] + last[n6x][n6y] + last[n7x][n7y];
+
+                  var live = last[cell_x][cell_y];
+
+                  next[cell_x][cell_y] = 0;   // assume dead until proven alive
+
+                  if( live ) {
+                     if( count == 2 || count == 3 )  // live cells with two or three neighbors live
+                        next[cell_x][cell_y] = 1;
+                  } else {
+                     if( count == 3 )   // dead cells with exactly three neighbors come to life
+                        next[cell_x][cell_y] = 1;
+                  }
+               }  // for cell_y
+            }  // for cell_x
+
+
+            for( var x = 0; x < last.length; x++ ) {   // populate last array
+               for( var y = 0; y < last[0].length; y++ ) {
+                  last[x][y] = next[x][y];
+               }
+            }
+
+            var xx = 0;  // map array of arrays to canvas cells
+            var yy = 0;
+            for( var x = 10; x <= xlimit; x+=7 ) {    // border 11, cell plus surround is 7
+               for( var y = 10; y <= ylimit; y+=7 ) {  // was 10
+                  if( next[xx][yy] == 1 ) {
+                     ctx.fillStyle = liveColor;  // live cell
+                  } else {
+                     ctx.fillStyle = deadColor;   // dead cell
+                  }
+                  ctx.fillRect(x, y, 5, 5);    // cells are 5x5
+                  yy++;
+               }
+               xx++;
+               yy=0;
+            }
+            await sleep(delay);
+
+         } // if( pause )
+      } // while( 1 )
+   } // life()
+
+   function toggle_cell( ctx, array, x, y ) {    // x, y are array coordinates
+      if( array[x][y] == 1 ) {    // already alive
+           ctx.fillStyle = deadColor;
+           array[x][y] = 0;
       } else {
+           ctx.fillStyle = liveColor;
+           array[x][y] = 1;
+      }
+      ctx.fillRect( 10 + 7 * x, 10 + 7 * y, 5, 5 );
 
-         if( step ) {   // single step
-            step = 0;
-            pause = 1;
-         }
-
-	 if( zero ) {   // clear screen
-	    zero = 0;
-	    last = zero_cells( last );
-	 }
-
-	 if( random ) {  // randomize screen
-	    random = 0;
-	    last = random_cells( last );
-	 }
-
-	 if( scroll ) {
-            if( scroll == 'right' ) {
-               last = scroll_left( last );
-            } else if( scroll == 'left' ) {
-               last = scroll_right( last );
-            } else if( scroll == 'up' ) {
-               last = scroll_down( last );
-            } else if( scroll == 'down' ) {
-               last = scroll_up( last );
-            } else {
-               console.log( 'unknown scroll value: ' + scroll );
-            }
-            scroll = '';
-	 }
-
-         for( var cell_x = 0; cell_x < width; cell_x++ ) {
-            for( var cell_y = 0; cell_y < height; cell_y++ ) {
-         
-               var n0x = cell_x -1; var n0y = cell_y -1;   // determine neighbors
-               var n1x = cell_x   ; var n1y = cell_y -1;
-               var n2x = cell_x +1; var n2y = cell_y -1;
-               var n3x = cell_x -1; var n3y = cell_y;
-               var n4x = cell_x +1; var n4y = cell_y;
-               var n5x = cell_x -1; var n5y = cell_y +1;
-               var n6x = cell_x   ; var n6y = cell_y +1;
-               var n7x = cell_x +1; var n7y = cell_y +1;
-               
-               if( cell_x == 0 )                    // wrap edges horizontally and vertically
-                  n0x = n3x = n5x = width -1;
-               
-               if( cell_x == width -1 )
-                  n2x = n4x = n7x = 0;
-               
-               if( cell_y == 0 )
-                  n0y = n1y = n2y = height -1;
-               
-               if( cell_y == height -1 )
-                  n5y = n6y = n7y = 0;
-               
-               var count = last[n0x][n0y] + last[n1x][n1y] + last[n2x][n2y] + last[n3x][n3y] + 
-                           last[n4x][n4y] + last[n5x][n5y] + last[n6x][n6y] + last[n7x][n7y];
-         
-               var live = last[cell_x][cell_y];
-         
-               next[cell_x][cell_y] = 0;   // assume dead until proven alive
-         
-               if( live ) { 
-                  if( count == 2 || count == 3 )  // live cells with two or three neighbors live
-                     next[cell_x][cell_y] = 1;
-               } else {
-                  if( count == 3 )   // dead cells with exactly three neighbors come to life
-                     next[cell_x][cell_y] = 1;
-               }
-            }  // for cell_y
-         }  // for cell_x
-      
-      
-         for( var x = 0; x < last.length; x++ ) {   // populate last array
-            for( var y = 0; y < last[0].length; y++ ) {
-               last[x][y] = next[x][y];
-            }
-         }
-      
-         var xx = 0;  // map array of arrays to canvas cells
-         var yy = 0;
-         for( var x = 10; x <= xlimit; x+=7 ) {    // border 11, cell plus surround is 7
-            for( var y = 10; y <= ylimit; y+=7 ) {  // was 10
-               if( next[xx][yy] == 1 ) {
-                  ctx.fillStyle = liveColor;  // live cell
-               } else {
-                  ctx.fillStyle = deadColor;   // dead cell
-               }
-               ctx.fillRect(x, y, 5, 5);    // cells are 5x5
-               yy++;
-            }
-            xx++;
-            yy=0;
-         }
-         await sleep(delay);
-
-      } // if( pause )
-   } // while( 1 )
-} // life()
-
-function toggle_cell( ctx, array, x, y ) {    // x, y are array coordinates
-   if( array[x][y] == 1 ) {    // already alive
-	ctx.fillStyle = deadColor;
-	array[x][y] = 0;
-   } else {
-	ctx.fillStyle = liveColor;
-	array[x][y] = 1;
+      return array;
    }
-   ctx.fillRect( 10 + 7 * x, 10 + 7 * y, 5, 5 );
-   
-   return array;
-}
 
-function log_array( array ) {
-   console.log( JSON.parse( JSON.stringify( array )));
-}
+   function log_array( array ) {
+      console.log( JSON.parse( JSON.stringify( array )));
+   }
 
-function detect_screen() {
-   xcanvas = $(document).width() -23;   // canvas size determined by detected screen size
-   ycanvas = $(document).height() -23;
-   width = Math.floor( xcanvas / 7.1 );
-   height = Math.floor( ycanvas / 7.1 );
-   xlimit = xcanvas - 25; // 25
-   ylimit = ycanvas - 10;
-   var c = document.getElementById( 'canvas' );   // grab the canvas element and set height and width
-   c.width = xcanvas;
-   c.height = ycanvas;
-   last = new Array( width );    // set first dimension size
-   next = new Array( width );
-//console.log( 'xcanvas: ' + xcanvas + ' ycanvas: ' + ycanvas );
-//console.log( 'width: ' + width + ' height: ' + height );
-//console.log( 'xlimit: ' + xlimit + ' ylimit: ' + ylimit );
-}
+   function detect_screen() {
+      xcanvas = $(document).width() -23;   // canvas determined by screen
+      ycanvas = $(document).height() -23;
+      width = Math.floor( xcanvas / 7.1 );
+      height = Math.floor( ycanvas / 7.1 );
+      xlimit = xcanvas - 25; // 25
+      ylimit = ycanvas - 10;
+      var c = document.getElementById( "canvas" );
+      c.width = xcanvas;
+      c.height = ycanvas;
+      last = new Array( width );    // set first dimension size
+      next = new Array( width );
+   //console.log( "xcanvas: " + xcanvas + " ycanvas: " + ycanvas );
+   //console.log( "width: " + width + " height: " + height );
+   //console.log( "xlimit: " + xlimit + " ylimit: " + ylimit );
+   }
 
-//   106     228  - hardcoded array dimensions - nsc floor( h,w / 7.1 )  - height, width
-//   750    1600  - hardcoded screen x,y max - step 7 - h-10, w-25  - xlimit, ylimit
-//   760    1625  - no scrollbars canvas size - h,w - 23  - xcanvas, ycanvas
+   detect_screen();
+   life();
+   }
 
-detect_screen();
-life();
+wrap();
 
 </script>
 </html>
