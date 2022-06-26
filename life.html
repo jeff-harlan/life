@@ -30,6 +30,7 @@
 <li>p - pause/play</li>
 <li>r - random cells</li>
 <li>s - single step</li>
+<li>t - stable grid</li>
 <li>z - zero cells</li>
 <!-- arrow keys -->
 <li>&#x2193; - scroll down</li>
@@ -129,6 +130,18 @@ function wrap() {
       return array;
    }
 
+   function pattern_cells( array ) {
+//alert('pattern_cells');    
+      for( var i = 0; i < array.length; i++ ) {
+        for( var j = 0; j < array[i].length; j++ ) {
+           array[i][j] = 1;
+           if( ( i % 3 == 0 ) || ( j % 3 == 0 ) ) {   // or not
+              array[i][j] = 0;
+           }
+        }
+      }
+      return array;
+   }
 
    async function life() {
 
@@ -139,6 +152,7 @@ function wrap() {
       var random = 0;
       var delay = 250;
       var help = 1;
+      var pattern = 0;
 
       $(document).keydown(function(e) {
         if(e.which == 80) {  // "p" - pause
@@ -192,6 +206,12 @@ function wrap() {
       $(document).keydown(function(e) {
         if(e.which == 82) {  // "r" - randomize screen
            random = 1;
+        }
+      });
+
+      $(document).keydown(function(e) {
+        if(e.which == 84) {  // "t" - try pattern
+           pattern = 1;
         }
       });
 
@@ -299,6 +319,11 @@ function wrap() {
             if( random ) {  // randomize screen
                random = 0;
                last = random_cells( last );
+            }
+
+            if( pattern ) {  // pattern screen
+               pattern = 0;
+               last = pattern_cells( last );
             }
 
             if( scroll ) {
